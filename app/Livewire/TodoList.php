@@ -6,6 +6,7 @@ use App\Models\Todo;
 use Livewire\Attributes\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
+use mysql_xdevapi\Exception;
 
 class TodoList extends Component
 {
@@ -30,21 +31,37 @@ class TodoList extends Component
         $this->resetPage();
     }
 
-    public function delete(Todo $todo)
+    public function delete($todoId)
     {
-        $todo->delete();
+        try {
+           $todo = Todo::findOrFail($todoId)->delete();
+        }catch (\Exception $ex){
+            session()->flash('error' , 'Failed to Delete !');
+        }
     }
 
-    public function mark(Todo $todo)
+    public function mark($todoId)
     {
-        $todo->completed = !$todo->completed;
-        $todo->save();
+        try {
+            $todo = Todo::findOrFail($todoId);
+            $todo->completed = !$todo->completed;
+            $todo->save();
+        }catch (\Exception $ex){
+            session()->flash('error' , 'Failed to Mark !');
+        }
+
     }
 
-    public function edit(Todo $todo)
+    public function edit($todoId)
     {
-        $this->editingTodoId = $todo->id;
-        $this->editingTodoName = $todo->name;
+        try {
+            $this->editingTodoId = Todo::findOrFail($todoId)->id;
+            $this->editingTodoName = Todo::findOrFail($todoId)->name;
+        }catch (\Exception $ex)
+        {
+            session()->flash('error' , 'Failed to Find Todo !');
+        }
+
     }
 
     public function update()
